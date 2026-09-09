@@ -8,6 +8,7 @@ class Transaction extends Model {
     protected $casts = ['transacted_at'=>'date','amount'=>'decimal:2'];
     public function user(){ return $this->belongsTo(User::class); }
     public function category(){ return $this->belongsTo(Category::class); }
+    public function attachments(){ return $this->hasMany(Attachment::class)->latest(); }
     public function scopeIncome($q){ return $q->where('type','income'); }
     public function scopeExpense($q){ return $q->where('type','expense'); }
     public function scopeForMonth($q,$ym){

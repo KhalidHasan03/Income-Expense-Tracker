@@ -9,21 +9,24 @@ class DashboardController extends Controller {
         $month=$r->query('month', now()->format('Y-m'));
         $start=Carbon::parse($month.'-01')->startOfMonth();
         $end=(clone $start)->endOfMonth();
-        $base=$user->transactions();
+        $base = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
         $incomeM = (clone $base)->where('type','income')->whereBetween('transacted_at',[$start,$end])->sum('amount');
         $expenseM = (clone $base)->where('type','expense')->whereBetween('transacted_at',[$start,$end])->sum('amount');
-        $balance = $user->transactions()->where('type','income')->sum('amount') - $user->transactions()->where('type','expense')->sum('amount');
-        $recent = $user->transactions()->with('category')->latest('transacted_at')->take(6)->get();
-        $byCat = $user->transactions()->select('category_id', DB::raw('SUM(amount) as total'))->where('type','expense')->whereBetween('transacted_at',[$start,$end])->groupBy('category_id')->with('category')->get();
+        $balanceBase = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+        $balance = (clone $balanceBase)->where('type','income')->sum('amount') - (clone $balanceBase)->where('type','expense')->sum('amount');
+        $recent = (clone $base)->with(['category','user'])->orderByDesc('transacted_at')->orderByDesc('id')->take(6)->get();
+        $byCat = (clone $base)->select('category_id', DB::raw('SUM(amount) as total'))->where('type','expense')->whereBetween('transacted_at',[$start,$end])->groupBy('category_id')->with('category')->get();
         $trend=[];
         for($i=5;$i>=0;$i--){
             $d=now()->subMonths($i);
             $s=$d->copy()->startOfMonth(); $e=$d->copy()->endOfMonth();
-            $inc=$user->transactions()->where('type','income')->whereBetween('transacted_at',[$s,$e])->sum('amount');
-            $exp=$user->transactions()->where('type','expense')->whereBetween('transacted_at',[$s,$e])->sum('amount');
+            $tb = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+            $inc=(clone $tb)->where('type','income')->whereBetween('transacted_at',[$s,$e])->sum('amount');
+            $exp=(clone $tb)->where('type','expense')->whereBetween('transacted_at',[$s,$e])->sum('amount');
             $trend[]=['label'=>$d->format('M'),'income'=>(float)$inc,'expense'=>(float)$exp];
         }
-        $totals=['txCount'=>$user->transactions()->count(),'catCount'=>$user->categories()->count(),'avgExpense'=>$user->transactions()->where('type','expense')->whereBetween('transacted_at',[$start,$end])->avg('amount')??0];
+        $allForStats = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+        $totals=['txCount'=>(clone $allForStats)->count(),'catCount'=>\App\Models\Category::count(),'avgExpense'=>(clone $allForStats)->where('type','expense')->whereBetween('transacted_at',[$start,$end])->avg('amount')??0];
         return view('dashboard', compact('incomeM','expenseM','balance','recent','byCat','trend','month','totals'));
     }
 }

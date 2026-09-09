@@ -2,13 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
 .card { @apply bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800; }
 .btn { @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[14px] font-semibold leading-none shadow-sm transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed; min-height:46px; }
 .btn-primary { @apply bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 shadow-indigo-200; }
-.btn-ghost { @apply bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50 hover:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-400; }
+.btn-ghost { @apply bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-400; }
 .btn-danger { @apply bg-red-50 text-red-700 border border-red-200 hover:bg-red-100; }
-.input { @apply w-full rounded-xl border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 px-4 py-3 text-[15px] leading-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition; min-height:46px; }
-.input option { @apply bg-white text-zinc-900; }
-label { @apply text-sm font-medium text-zinc-700 mb-1.5 inline-block; }
+.btn-edit { @apply bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 shadow-sm; }
+.btn-delete { @apply bg-red-600 text-white hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 shadow-sm; }
+.btn-info,.btn-update { @apply bg-sky-600 text-white hover:bg-sky-700 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 shadow-sm; }
+.btn-sm { @apply !px-3.5 !py-1.5 !text-xs !min-h-[32px] !rounded-full font-semibold; }
+.input { @apply w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 px-4 py-3 text-[15px] leading-5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition; min-height:46px; }
+.input option { @apply bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100; }
+label { @apply text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 inline-block; }
 .form-group { @apply space-y-1.5 mb-4; }
 .form-grid { @apply grid gap-4; }

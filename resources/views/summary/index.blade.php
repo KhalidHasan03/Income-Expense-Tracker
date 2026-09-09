@@ -1,6 +1,6 @@
 <x-app-layout>
-<div class="flex flex-wrap items-end justify-between gap-4 mb-6"><div><h1 class="text-2xl font-semibold tracking-tight">Monthly Summary</h1><p class="text-sm text-zinc-500">{{ $month }} • {{ $daily->count() }} active days @if($topExpense) • Top: {{ $topExpense->category->name }} @endif</p></div>
-<form method="GET" class="flex items-center gap-2"><select name="month" class="input !w-auto" onchange="this.form.submit()">@foreach($months as $m)<option value="{{ $m }}" @selected($m==$month)>{{ $m }}</option>@endforeach</select><button type="button" onclick="window.print()" class="btn btn-ghost">Print</button></form></div>
+<div class="flex flex-wrap items-end justify-between gap-4 mb-6"><div><h1 class="text-2xl font-semibold tracking-tight">Monthly Summary</h1><p class="text-sm text-zinc-500">{{ \Carbon\Carbon::parse($month.'-01')->format('M-Y') }} • {{ $daily->count() }} active days @if($topExpense) • Top: {{ $topExpense->category->name }} @endif</p></div>
+<form method="GET" class="flex items-center gap-2"><select name="month" class="input !w-auto" onchange="this.form.submit()">@foreach($months as $m)<option value="{{ $m }}" @selected($m==$month)>{{ \Carbon\Carbon::parse($m.'-01')->format('M-Y') }}</option>@endforeach</select><button type="button" onclick="window.print()" class="btn btn-ghost">Print</button></form></div>
 
 @php $savings=$income-$expense; $pct=$income>0?($savings/$income*100):0; @endphp
 <div class="grid md:grid-cols-3 gap-4">
@@ -10,7 +10,7 @@
 </div>
 
 @if(!$daily->isEmpty())
-<div class="card p-5 mt-4"><div class="font-medium mb-3">Daily Flow ({{ $month }})</div><canvas id="daily" height="80"></canvas></div>
+<div class="card p-5 mt-4"><div class="font-medium mb-3">Daily Flow ({{ \Carbon\Carbon::parse($month.'-01')->format('M-Y') }})</div><canvas id="daily" height="80"></canvas></div>
 @endif
 
 <div class="grid md:grid-cols-2 gap-4 mt-4">

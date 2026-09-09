@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -49,4 +50,7 @@ class User extends Authenticatable
 
     public function categories(){ return $this->hasMany(Category::class); }
     public function transactions(){ return $this->hasMany(Transaction::class); }
+    public function attachments(){ return $this->hasMany(Attachment::class); }
+    public function isAdmin(): bool { return $this->role === 'admin'; }
+    public function isManager(): bool { return $this->role === 'manager'; }
 }
