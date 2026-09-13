@@ -4,8 +4,9 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 class TransactionController extends Controller {
     public function index(Request $r){
-        $base = $r->user()->isAdmin() ? \App\Models\Transaction::query() : $r->user()->transactions();
-        $q=$base->with(['category','attachments','user']);
+        $canViewAll = $r->user()->isAdmin() || $r->user()->isManager();
+        $base = $canViewAll ? \App\Models\Transaction::query() : $r->user()->transactions();
+        $q=$base->with(['category','attachments','user','pendingUpdateRequest']);
         if($r->filled('type') && in_array($r->type,['income','expense'])) $q->where('type',$r->type);
         if($r->filled('month')) $q->where('transacted_at','like',$r->month.'%');
         if($r->filled('category_id')) $q->where('category_id',$r->category_id);
@@ -49,7 +50,9 @@ class TransactionController extends Controller {
         return back()->with('success','Transaction added.');
     }
     public function update(Request $r, Transaction $transaction){
-        if($r->user()->isManager()) abort_unless($transaction->user_id==$r->user()->id,403);
+        $user = $r->user();
+        abort_unless($transaction->user_id==$user->id || $user->isAdmin(),403);
+
         $d=$r->validate([
             'title'=>'required|string|max:120',
             'amount'=>'required|numeric|min:0.01',
@@ -60,11 +63,31 @@ class TransactionController extends Controller {
         ]);
         $cat=\App\Models\Category::findOrFail($d['category_id']);
         if($cat->type!==$d['type']) return back()->withErrors(['category_id'=>'Category type mismatch.']);
-        $transaction->update($d);
-        return back()->with('success','Updated.');
+
+        if($user->isAdmin()){
+            $transaction->update($d);
+            \App\Models\TransactionUpdateRequest::where('transaction_id',$transaction->id)->where('status','pending')->update(['status'=>'rejected','reviewed_by'=>$user->id,'reviewed_at'=>now()]);
+            return back()->with('success','Transaction updated.');
+        }
+
+        $existing = \App\Models\TransactionUpdateRequest::where('transaction_id',$transaction->id)->where('requested_by',$user->id)->where('status','pending')->first();
+        if($existing){
+            $existing->update(['payload'=>$d]);
+        } else {
+            \App\Models\TransactionUpdateRequest::create([
+                'transaction_id'=>$transaction->id,
+                'requested_by'=>$user->id,
+                'payload'=>$d,
+                'status'=>'pending',
+            ]);
+        }
+
+        return back()->with('success','Your changes have been sent for admin approval. You will see the update after admin approves.');
     }
     public function destroy(Request $r, Transaction $transaction){
-        if($r->user()->isManager()) abort_unless($transaction->user_id==$r->user()->id,403);
+        if(! $r->user()->isAdmin()){
+            abort(403, 'Managers cannot delete transactions. Please contact an admin.');
+        }
         $transaction->delete();
         return back()->with('success','Deleted.');
     }

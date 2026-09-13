@@ -21,16 +21,22 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'role' => 'admin',
+            'is_approved' => true,
+            'approved_at' => now(),
         ]);
         User::factory()->create([
             'name' => 'Manager User',
             'email' => 'manager@example.com',
             'role' => 'manager',
+            'is_approved' => true,
+            'approved_at' => now(),
         ]);
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'role' => 'admin',
+            'is_approved' => true,
+            'approved_at' => now(),
         ]);
     }
 }

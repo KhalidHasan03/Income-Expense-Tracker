@@ -34,19 +34,38 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'string', 'in:admin,manager,user'],
         ]);
 
-        $role = User::count()===0 ? 'admin' : 'manager';
+        $isFirstUser = User::count() === 0;
+        $role = $request->input('role', 'user');
+
+        if ($isFirstUser) {
+            $role = 'admin';
+        }
+
+        $isApproved = $isFirstUser;
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $role,
+            'is_approved' => $isApproved,
+            'approved_at' => $isApproved ? now() : null,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+
+        if (! $user->isApproved() && ! $user->isAdmin()) {
+            return redirect()->route('pending');
+        }
+
+        if (! $user->isApproved() && $user->isAdmin()) {
+            return redirect()->route('pending');
+        }
 
         return redirect(route('dashboard', absolute: false));
     }

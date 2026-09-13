@@ -11,7 +11,8 @@ class ReportController extends Controller {
         try { Carbon::parse($from); Carbon::parse($to); } catch(\Exception $e){ $from=now()->startOfMonth()->toDateString(); $to=now()->endOfMonth()->toDateString(); }
         if($from>$to){ [$from,$to]=[$to,$from]; }
         $user=$r->user();
-        $base = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+        $canViewAll = $user->isAdmin() || $user->isManager();
+        $base = $canViewAll ? \App\Models\Transaction::query() : $user->transactions();
         $q=(clone $base)->with(['category','attachments','user'])->whereBetween('transacted_at',[$from,$to]);
         if($r->filled('type') && in_array($r->type,['income','expense'])) $q->where('type',$r->type);
         if($r->filled('category_id')) $q->where('category_id',$r->category_id);
@@ -32,7 +33,8 @@ class ReportController extends Controller {
         $from=$r->query('from', now()->startOfMonth()->toDateString());
         $to=$r->query('to', now()->endOfMonth()->toDateString());
         $user=$r->user();
-        $base2 = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+        $canViewAll2 = $user->isAdmin() || $user->isManager();
+        $base2 = $canViewAll2 ? \App\Models\Transaction::query() : $user->transactions();
         $q=(clone $base2)->with(['category','user','attachments'])->whereBetween('transacted_at',[$from,$to]);
         if($r->filled('type') && in_array($r->type,['income','expense'])) $q->where('type',$r->type);
         if($r->filled('category_id')) $q->where('category_id',$r->category_id);

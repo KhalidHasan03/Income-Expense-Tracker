@@ -19,8 +19,8 @@
 </div>
 
 <script>
-const inc=@json($byCatIncome->map(fn($r)=>['name'=>$r->category->name,'total'=>(float)$r->total,'color'=>$r->category->color])->values());
-const exp=@json($byCatExpense->map(fn($r)=>['name'=>$r->category->name,'total'=>(float)$r->total,'color'=>$r->category->color])->values());
+const inc=@json($byCatIncome->map(fn($r)=>['name'=>$r->category?->name??'?', 'total'=>(float)$r->total,'color'=>$r->category?->color??'#6366f1'])->values());
+const exp=@json($byCatExpense->map(fn($r)=>['name'=>$r->category?->name??'?', 'total'=>(float)$r->total,'color'=>$r->category?->color??'#6366f1'])->values());
 const daily=@json($daily->map(fn($r)=>['d'=>$r->d,'inc'=>(float)$r->inc,'exp'=>(float)$r->exp])->values());
 if(inc.length) new Chart(document.getElementById('inc'),{type:'doughnut',data:{labels:inc.map(i=>i.name),datasets:[{data:inc.map(i=>i.total),backgroundColor:inc.map(i=>i.color)}]},options:{plugins:{legend:{position:'bottom'}}}});
 if(exp.length) new Chart(document.getElementById('exp'),{type:'doughnut',data:{labels:exp.map(i=>i.name),datasets:[{data:exp.map(i=>i.total),backgroundColor:exp.map(i=>i.color)}]},options:{plugins:{legend:{position:'bottom'}}}});

@@ -22,6 +22,8 @@
 <a href="{{ route('categories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('categories.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">⊞ Categories</a>
 <a href="{{ route('summary.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('summary.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">▥ Monthly Summary</a>
 <a href="{{ route('reports.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('reports.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">📊 Reports</a>
+@if(auth()->user()->isAdmin())<a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('admin.users.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">👥 User Approvals</a>@endif
+@if(auth()->user()->isAdmin())<a href="{{ route('admin.transactions.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl {{ request()->routeIs('admin.transactions.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800' }}">✏️ Edit Approvals</a>@endif
 </nav>
 <div class="mt-auto p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
 <button onclick="toggleTheme()" id="theme-toggle" class="w-full btn btn-ghost justify-between !min-h-[40px] !py-2 text-xs"><span class="flex items-center gap-2"><span id="theme-icon">○</span><span id="theme-label">Dark Mode</span></span><span class="w-9 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 relative transition"><span id="theme-dot" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-all dark:translate-x-4"></span></span></button>
@@ -29,6 +31,7 @@
 <div class="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 grid place-items-center text-sm">{{ substr(auth()->user()->name??'U',0,1) }}</div>
 <div class="text-sm min-w-0"><div class="font-medium leading-none truncate">{{ auth()->user()->name??'Guest' }}</div><div class="text-xs text-zinc-500 truncate">{{ auth()->user()->email??'' }}</div></div>
 </div>
+@if(!auth()->user()->isApproved())<div class="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">⏳ Awaiting admin approval — <a href="{{ route('pending') }}" class="underline">View status</a></div>@endif
 <a href="{{ route('profile.edit') }}" class="btn btn-ghost w-full justify-center mt-2 text-xs">Profile</a>
 <form method="POST" action="{{ route('logout') }}" class="mt-2">@csrf<button class="w-full btn btn-ghost justify-center">Log Out</button></form>
 </div>
@@ -44,6 +47,8 @@
 <a href="{{ route('categories.index') }}" class="block px-3 py-2 rounded-xl {{ request()->routeIs('categories.*')?'bg-zinc-900 text-white':'' }}">Categories</a>
 <a href="{{ route('summary.index') }}" class="block px-3 py-2 rounded-xl {{ request()->routeIs('summary.*')?'bg-zinc-900 text-white':'' }}">Summary</a>
 <a href="{{ route('reports.index') }}" class="block px-3 py-2 rounded-xl {{ request()->routeIs('reports.*')?'bg-zinc-900 text-white':'' }}">Reports</a>
+@if(auth()->user()->isAdmin())<a href="{{ route('admin.users.index') }}" class="block px-3 py-2 rounded-xl {{ request()->routeIs('admin.users.*')?'bg-zinc-900 text-white':'' }}">User Approvals</a>@endif
+@if(auth()->user()->isAdmin())<a href="{{ route('admin.transactions.index') }}" class="block px-3 py-2 rounded-xl {{ request()->routeIs('admin.transactions.*')?'bg-zinc-900 text-white':'' }}">Edit Approvals</a>@endif
 <form method="POST" action="{{ route('logout') }}">@csrf<button class="w-full text-left px-3 py-2">Logout</button></form>
 </div>
 <main class="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">

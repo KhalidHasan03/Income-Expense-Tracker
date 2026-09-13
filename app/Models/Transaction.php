@@ -9,6 +9,8 @@ class Transaction extends Model {
     public function user(){ return $this->belongsTo(User::class); }
     public function category(){ return $this->belongsTo(Category::class); }
     public function attachments(){ return $this->hasMany(Attachment::class)->latest(); }
+    public function updateRequests(){ return $this->hasMany(TransactionUpdateRequest::class); }
+    public function pendingUpdateRequest(){ return $this->hasOne(TransactionUpdateRequest::class)->where('status','pending')->latestOfMany(); }
     public function scopeIncome($q){ return $q->where('type','income'); }
     public function scopeExpense($q){ return $q->where('type','expense'); }
     public function scopeForMonth($q,$ym){

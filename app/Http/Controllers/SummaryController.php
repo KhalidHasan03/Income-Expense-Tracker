@@ -9,7 +9,8 @@ class SummaryController extends Controller {
         $start=Carbon::parse($month.'-01')->startOfMonth();
         $end=(clone $start)->endOfMonth();
         $user=$r->user();
-        $base = $user->isAdmin() ? \App\Models\Transaction::query() : $user->transactions();
+        $canViewAll = $user->isAdmin() || $user->isManager();
+        $base = $canViewAll ? \App\Models\Transaction::query() : $user->transactions();
         $income=(clone $base)->where('type','income')->whereBetween('transacted_at',[$start,$end])->sum('amount');
         $expense=(clone $base)->where('type','expense')->whereBetween('transacted_at',[$start,$end])->sum('amount');
         $byCatIncome=(clone $base)->select('category_id', DB::raw('SUM(amount) as total'))->where('type','income')->whereBetween('transacted_at',[$start,$end])->groupBy('category_id')->with('category')->get();

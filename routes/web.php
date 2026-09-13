@@ -7,8 +7,12 @@ use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\UserApprovalController;
 Route::get('/', function(){ return view('welcome'); })->name('welcome');
-Route::middleware(['auth','verified'])->group(function(){
+Route::middleware(['auth'])->group(function(){
+    Route::get('/pending', fn() => view('pending'))->name('pending');
+});
+Route::middleware(['auth','verified','approved'])->group(function(){
     Route::get('/dashboard', [DashboardController::class,'index'])->name('dashboard');
     Route::get('/summary', [SummaryController::class,'index'])->name('summary.index');
     Route::get('/reports', [ReportController::class,'index'])->name('reports.index');
@@ -24,6 +28,15 @@ Route::middleware(['auth','verified'])->group(function(){
     Route::post('/transactions/{transaction}/attachments', [AttachmentController::class,'store'])->name('attachments.store');
     Route::delete('/attachments/{attachment}', [AttachmentController::class,'destroy'])->name('attachments.destroy');
     Route::get('/attachments/{attachment}', [AttachmentController::class,'show'])->name('attachments.show');
+    Route::middleware('role:admin')->group(function(){
+        Route::get('/admin/users', [UserApprovalController::class,'index'])->name('admin.users.index');
+        Route::post('/admin/users/{user}/approve', [UserApprovalController::class,'approve'])->name('admin.users.approve');
+        Route::delete('/admin/users/{user}/reject', [UserApprovalController::class,'reject'])->name('admin.users.reject');
+        Route::patch('/admin/users/{user}/role', [UserApprovalController::class,'updateRole'])->name('admin.users.role');
+        Route::get('/admin/transaction-edits', [\App\Http\Controllers\Admin\TransactionApprovalController::class,'index'])->name('admin.transactions.index');
+        Route::post('/admin/transaction-edits/{request}/approve', [\App\Http\Controllers\Admin\TransactionApprovalController::class,'approve'])->name('admin.transactions.approve');
+        Route::post('/admin/transaction-edits/{request}/reject', [\App\Http\Controllers\Admin\TransactionApprovalController::class,'reject'])->name('admin.transactions.reject');
+    });
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

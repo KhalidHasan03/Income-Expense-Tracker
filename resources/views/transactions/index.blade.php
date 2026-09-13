@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="flex flex-wrap gap-3 items-end justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight">Transactions @if(auth()->user()->isAdmin())<span class="text-xs font-normal px-2 py-1 rounded-full bg-indigo-100 text-indigo-700">Admin • sees all users</span> @else <span class="text-xs font-normal px-2 py-1 rounded-full bg-amber-100 text-amber-700">Manager • own only</span> @endif</h1>
+            <h1 class="text-2xl font-semibold tracking-tight">Transactions <span class="text-xs font-normal px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">All transactions • shared view</span> @if(!auth()->user()->isAdmin())<span class="text-xs font-normal px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Manager • view all, edit own (approval required)</span>@endif</h1>
             <p class="text-sm text-zinc-500">{{ $totals['count'] }} found • Income ${{ number_format($totals['income'],2) }} • Expense ${{ number_format($totals['expense'],2) }} • Categories global • Last tx on top (DESC)</p>
         </div>
         <button onclick="document.getElementById('addTx').showModal()" class="btn btn-primary">+ Add</button>
@@ -53,7 +53,7 @@
                 <thead class="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500">
                     <tr>
                         <th class="text-left px-4 py-3">Title</th>
-                        <th class="text-left px-4 py-3">Category</th>@if(auth()->user()->isAdmin())<th class="text-left px-4 py-3">Owner</th>@endif<th class="text-left px-4 py-3">Date</th>
+                        <th class="text-left px-4 py-3">Category</th><th class="text-left px-4 py-3">Owner</th><th class="text-left px-4 py-3">Date</th>
                         <th class="text-right px-4 py-3">Amount</th>
                         <th class="text-center px-4 py-3">Att</th>
                         <th class="px-4 py-3 text-right">Actions</th>
@@ -63,24 +63,38 @@
                     @forelse($txs as $t)
                     <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
                         <td class="px-4 py-3">
-                            <div class="font-medium">{{ $t->title }}</div>@if($t->note)<div class="text-xs text-zinc-500 truncate max-w-[220px]">{{ Str::limit($t->note,40) }}</div>@endif
+                            <div class="font-medium flex items-center gap-2">{{ $t->title }} @if($t->pendingUpdateRequest)<span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">⏳ Pending approval</span>@endif</div>@if($t->note)<div class="text-xs text-zinc-500 truncate max-w-[220px]">{{ Str::limit($t->note,40) }}</div>@endif
                         </td>
                         <td class="px-4 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background: {{ $t->category->color }}"></span>{{ $t->category->name }}</span> <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full {{ $t->type=='income'?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700' }}">{{ $t->type }}</span></td>
-                        @if(auth()->user()->isAdmin())<td class="px-4 py-3 text-xs"><span class="px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800">{{ $t->user->name ?? $t->user_id }}</span></td>@endif
+                        <td class="px-4 py-3 text-xs"><span class="px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800">{{ $t->user->name ?? $t->user_id }}</span></td>
                         <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{{ $t->transacted_at->format('Y-m-d') }}</td>
                         <td class="px-4 py-3 text-right font-semibold {{ $t->type=='income'?'text-emerald-600':'text-red-600' }}">{{ $t->type=='income'?'+':'-' }}${{ number_format($t->amount,2) }}</td>
                         <td class="px-4 py-3 text-center">@if($t->attachments->count())<a href="{{ route('attachments.show', $t->attachments->first()) }}" class="text-xs px-2 py-1 rounded-full bg-sky-100 text-sky-700"> {{ $t->attachments->count() }}</a>@else<span class="text-xs text-zinc-400">—</span>@endif</td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex justify-end gap-2">
-                                <button onclick="openEdit({{ $t->id }})" class="btn btn-edit btn-sm">Edit</button>
-                                <form method="POST" action="{{ route('transactions.destroy',$t) }}" onsubmit="return confirm('Delete {{ $t->title }}?')">@csrf @method('DELETE')<button class="btn btn-delete btn-sm">Delete</button></form>
+                                @if(auth()->user()->isAdmin() || $t->user_id == auth()->id())
+                                    <button onclick="openEdit({{ $t->id }})" class="btn btn-edit btn-sm">Edit</button>
+                                @else
+                                    <span class="text-xs text-zinc-400 px-2 py-1">No permission</span>
+                                @endif
+                                @if(auth()->user()->isAdmin())
+                                    <form method="POST" action="{{ route('transactions.destroy',$t) }}" onsubmit="return confirm('Delete {{ $t->title }}?')">@csrf @method('DELETE')<button class="btn btn-delete btn-sm">Delete</button></form>
+                                @else
+                                    <span class="text-xs px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500" title="Only admins can delete">No delete</span>
+                                @endif
                             </div>
                         </td>
                     </tr>
 
                     <dialog id="edit-{{ $t->id }}" class="rounded-2xl p-0 backdrop:bg-black/30 w-full max-w-2xl">
                         <div class="p-6">
-                            <h3 class="font-semibold mb-4">Edit Transaction</h3>
+                            <h3 class="font-semibold mb-4">Edit Transaction @if($t->pendingUpdateRequest)<span class="text-xs font-normal px-2 py-1 rounded-full bg-amber-100 text-amber-700">Pending approval exists</span>@endif</h3>
+                            @if($t->pendingUpdateRequest && !auth()->user()->isAdmin())
+                                <div class="mb-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700">⏳ Your previous edit is awaiting admin approval. Submitting again will update the pending request.</div>
+                            @endif
+                            @if($t->pendingUpdateRequest && auth()->user()->isAdmin())
+                                <div class="mb-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 px-3 py-2 text-xs text-indigo-700">Pending edit from {{ $t->pendingUpdateRequest->requester->name ?? 'user' }} — review in <a href="{{ route('admin.transactions.index') }}" class="underline">Transaction Approvals</a>. Saving here will directly update and dismiss pending.</div>
+                            @endif
                             <form method="POST" action="{{ route('transactions.update',$t) }}" class="grid md:grid-cols-2 gap-3">@csrf @method('PUT')
                                 <input name="title" value="{{ $t->title }}" required class="input my-2">
                                 <input name="amount" value="{{ $t->amount }}" required type="number" step="0.01" class="input my-2">
@@ -91,7 +105,8 @@
                                 <select name="category_id" required class="input my-2" id="edit-cat-{{ $t->id }}">@foreach($cats as $cat)<option value="{{ $cat->id }}" data-type="{{ $cat->type }}" @selected($cat->id==$t->category_id)>{{ $cat->name }} ({{ $cat->type }})</option>@endforeach</select>
                                 <input name="transacted_at" value="{{ $t->transacted_at->format('Y-m-d') }}" required type="date" class="input my-2">
                                 <input name="note" value="{{ $t->note }}" placeholder="Note" class="input my-2">
-                                <div class="md:col-span-2 flex justify-end gap-2"><button type="button" onclick="this.closest('dialog').close()" class="btn btn-ghost">Cancel</button><button class="btn btn-info">Update</button></div>
+                                <div class="md:col-span-2 flex justify-end gap-2"><button type="button" onclick="this.closest('dialog').close()" class="btn btn-ghost">Cancel</button><button class="btn btn-info">{{ auth()->user()->isAdmin() ? 'Update' : 'Request Update' }}</button></div>
+                                @if(!auth()->user()->isAdmin())<p class="md:col-span-2 text-xs text-zinc-500">Your changes will be sent for admin approval and will appear after approval.</p>@endif
                             </form>
                             @if($t->attachments->count())
                             <div class="mt-4 border-t pt-3">
@@ -107,7 +122,7 @@
                     </dialog>
 
                     @empty<tr>
-                        <td colspan="{{ auth()->user()->isAdmin() ? 7 : 6 }}" class="text-center py-16">
+                        <td colspan="7" class="text-center py-16">
                             <div class="text-3xl mb-2">∅</div>
                             <div class="font-medium">No transactions</div>
                             <p class="text-sm text-zinc-500">Adjust filters or add a new transaction.</p>
