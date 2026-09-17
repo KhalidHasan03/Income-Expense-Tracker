@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight">Transaction Edits <span class="text-xs font-normal px-2 py-1 rounded-full bg-amber-100 text-amber-700">{{ $pendingCount }} pending</span></h1>
+            <h1 class="text-2xl font-semibold tracking-tight">Transaction Edits <span class="text-xs font-normal px-2 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{{ $pendingCount }} pending</span></h1>
             <p class="text-sm text-zinc-500">Manager edits need your approval before they become visible.</p>
         </div>
         <form method="GET" class="flex items-center gap-2">
@@ -37,21 +37,21 @@
                     <div class="text-xs uppercase tracking-widest text-zinc-500 mb-2">Current</div>
                     <div class="space-y-1 text-sm">
                         <div><span class="text-zinc-500">Title:</span> {{ $req->transaction->title }}</div>
-                        <div><span class="text-zinc-500">Amount:</span> ${{ number_format($req->transaction->amount,2) }} <span class="text-xs px-1.5 py-0.5 rounded-full {{ $req->transaction->type=='income'?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700' }}">{{ $req->transaction->type }}</span></div>
+                        <div><span class="text-zinc-500">Amount:</span> ${{ number_format($req->transaction->amount,2) }} <span class="text-xs px-1.5 py-0.5 rounded-full {{ $req->transaction->type=='income'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300':'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' }}">{{ $req->transaction->type }}</span></div>
                         <div><span class="text-zinc-500">Category:</span> {{ $req->transaction->category->name ?? '-' }} ({{ $req->transaction->category->type ?? '' }})</div>
                         <div><span class="text-zinc-500">Date:</span> {{ $req->transaction->transacted_at->format('Y-m-d') }}</div>
                         <div><span class="text-zinc-500">Note:</span> {{ $req->transaction->note ?? '—' }}</div>
                     </div>
                 </div>
                 <div class="rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-4">
-                    <div class="text-xs uppercase tracking-widest text-amber-700 mb-2">Proposed (pending)</div>
+                    <div class="text-xs uppercase tracking-widest text-amber-700 dark:text-zinc-900 mb-2">Proposed (pending)</div>
                     @php $p=$req->payload; $cat=\App\Models\Category::find($p['category_id'] ?? null); @endphp
-                    <div class="space-y-1 text-sm">
-                        <div><span class="text-zinc-500">Title:</span> <span class="{{ $p['title'] !== $req->transaction->title ? 'font-semibold text-amber-700' : '' }}">{{ $p['title'] }}</span></div>
-                        <div><span class="text-zinc-500">Amount:</span> <span class="{{ (string)$p['amount'] !== (string)$req->transaction->amount ? 'font-semibold text-amber-700' : '' }}">${{ number_format($p['amount'],2) }}</span> <span class="text-xs px-1.5 py-0.5 rounded-full {{ $p['type']=='income'?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700' }}">{{ $p['type'] }}</span></div>
-                        <div><span class="text-zinc-500">Category:</span> <span class="{{ ($p['category_id'] != $req->transaction->category_id) ? 'font-semibold text-amber-700' : '' }}">{{ $cat->name ?? $p['category_id'] }} ({{ $cat->type ?? $p['type'] }})</span></div>
-                        <div><span class="text-zinc-500">Date:</span> <span class="{{ $p['transacted_at'] != $req->transaction->transacted_at->format('Y-m-d') ? 'font-semibold text-amber-700' : '' }}">{{ $p['transacted_at'] }}</span></div>
-                        <div><span class="text-zinc-500">Note:</span> <span class="{{ ($p['note'] ?? '') !== ($req->transaction->note ?? '') ? 'font-semibold text-amber-700' : '' }}">{{ $p['note'] ?? '—' }}</span></div>
+                    <div class="space-y-1 text-sm dark:text-zinc-900">
+                        <div><span class="text-zinc-500 dark:text-zinc-900">Title:</span> <span class="{{ $p['title'] !== $req->transaction->title ? 'font-semibold text-amber-700 dark:text-zinc-900' : '' }}">{{ $p['title'] }}</span></div>
+                        <div><span class="text-zinc-500 dark:text-zinc-900">Amount:</span> <span class="{{ (string)$p['amount'] !== (string)$req->transaction->amount ? 'font-semibold text-amber-700 dark:text-zinc-900' : '' }}">${{ number_format($p['amount'],2) }}</span> <span class="text-xs px-1.5 py-0.5 rounded-full {{ $p['type']=='income'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300':'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' }}">{{ $p['type'] }}</span></div>
+                        <div><span class="text-zinc-500 dark:text-zinc-900">Category:</span> <span class="{{ ($p['category_id'] != $req->transaction->category_id) ? 'font-semibold text-amber-700 dark:text-zinc-900' : '' }}">{{ $cat->name ?? $p['category_id'] }} ({{ $cat->type ?? $p['type'] }})</span></div>
+                        <div><span class="text-zinc-500 dark:text-zinc-900">Date:</span> <span class="{{ $p['transacted_at'] != $req->transaction->transacted_at->format('Y-m-d') ? 'font-semibold text-amber-700 dark:text-zinc-900' : '' }}">{{ $p['transacted_at'] }}</span></div>
+                        <div><span class="text-zinc-500 dark:text-zinc-900">Note:</span> <span class="{{ ($p['note'] ?? '') !== ($req->transaction->note ?? '') ? 'font-semibold text-amber-700 dark:text-zinc-900' : '' }}">{{ $p['note'] ?? '—' }}</span></div>
                     </div>
                 </div>
             </div>
